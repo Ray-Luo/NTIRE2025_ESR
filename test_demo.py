@@ -65,6 +65,13 @@ def select_model(args, device):
             if target in key:
                 filtered_checkpoint[key.replace(target, "")] = value
         model.load_state_dict(filtered_checkpoint)
+    elif model_id == 3:
+        # from models.team01_[your_model_name] import [your_model_name]
+        name, data_range = f"{model_id:02}_[GMSR]", 1.0
+        from models.gmsr import SlimUNetModelConv
+
+        model = SlimUNetModelConv()
+        print(model)
     else:
         raise NotImplementedError(f"Model {model_id} is not implemented.")
 
@@ -169,9 +176,9 @@ def run(model, model_name, data_range, tile, logger, device, args, mode="test"):
         img_lr = util.uint2tensor4(img_lr, data_range)
         img_lr = img_lr.to(device)
 
-        H, W = img_lr.size(2), img_lr.size(3)
-        if H % 2 != 0 or W % 2 != 0:
-            continue
+        # H, W = img_lr.size(2), img_lr.size(3)
+        # if H % 8 != 0 or W % 8 != 0:
+        #     continue
 
         # --------------------------------
         # (2) img_sr
@@ -194,7 +201,7 @@ def run(model, model_name, data_range, tile, logger, device, args, mode="test"):
         # PSNR and SSIM
         # --------------------------------
 
-        # print(img_sr.shape, img_hr.shape)
+        print(img_sr.shape, img_hr.shape)
         psnr = util.calculate_psnr(img_sr, img_hr, border=border)
         results[f"{mode}_psnr"].append(psnr)
 

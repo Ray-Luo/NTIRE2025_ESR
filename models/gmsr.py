@@ -213,6 +213,163 @@ class GMSR_ECB(nn.Module):
         return out
 
 
+class Sequential(nn.Sequential):
+    """
+    A sequential module that passes timestep embeddings to the children that
+    support it as an extra input.
+    """
+
+    def forward(self, x):
+        for layer in self:
+            x = layer(x)
+        return x
+
+
+class SlimUNetModelConv(nn.Module):
+    """
+    The full UNet model with attention and timestep embedding.
+    :param in_channels: channels in the input Tensor.
+    :param model_channels: base channel count for the model.
+    :param out_channels: channels in the output Tensor.
+    :param num_res_blocks: number of residual blocks per downsample.
+    :param channel_mult: channel multiplier for each level of the UNet.
+    :param conv_resample: if True, use learned convolutions for upsampling and
+        downsampling.
+    :param dims: determines if the signal is 1D, 2D, or 3D.
+    :param use_scale_shift_norm: use a FiLM-like conditioning mechanism.
+    :param resblock_updown: use residual blocks for up/downsampling.
+    """
+
+    def __init__(
+        self,
+        in_channels=3,
+        model_channels=96,
+        out_channels=3 * 16,
+        num_res_blocks=[1, 1, 1],
+        channel_mult=[1, 1, 1],
+    ):
+        super().__init__()
+
+        if isinstance(num_res_blocks, int):
+            num_res_blocks = [
+                num_res_blocks,
+            ] * len(channel_mult)
+        else:
+            assert len(num_res_blocks) == len(channel_mult)
+        self.num_res_blocks = num_res_blocks
+
+        self.in_channels = in_channels
+        self.model_channels = model_channels
+        self.out_channels = out_channels
+        self.channel_mult = channel_mult
+
+        init_in_ch = in_channels
+        ch = input_ch = int(channel_mult[-1] * model_channels)
+        self.input_blocks = nn.ModuleList(
+            [
+                Sequential(
+                    CBAReParam(
+                        init_in_ch, ch, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+                    )
+                )
+            ]
+        )
+        input_block_chans = []
+        for level, mult in enumerate(channel_mult):
+            layers = []
+            for _ in range(num_res_blocks[level]):
+                layers.append(
+                    CBAReParam(
+                        ch,
+                        int(mult * model_channels),
+                        3,
+                        1,
+                        1,
+                        act="LReLU",
+                        bn=False,
+                        type="ecb",
+                    )
+                )
+                ch = int(mult * model_channels)
+                input_block_chans.append(ch)
+            if level != len(channel_mult) - 1:
+                out_ch = ch
+                layers.append(
+                    Sequential(
+                        CBAReParam(
+                            ch, ch, k=3, s=2, p=1, act="LReLU", bn=False, type="basic"
+                        )
+                    )
+                )
+                ch = out_ch
+            self.input_blocks.append(Sequential(*layers))
+
+        self.middle_block = Sequential(
+            CBAReParam(ch, ch, 3, 1, 1, act="LReLU", bn=False, type="ecb"),
+            CBAReParam(ch, ch, 3, 1, 1, act="LReLU", bn=False, type="ecb"),
+        )
+
+        self.output_blocks = nn.ModuleList([])
+        for level, mult in list(enumerate(channel_mult)):
+            layers = []
+            ich = input_block_chans.pop()
+            for i in range(num_res_blocks[level]):
+                layers.append(
+                    CBAReParam(
+                        ch + ich,
+                        int(model_channels * mult),
+                        3,
+                        1,
+                        1,
+                        act="LReLU",
+                        bn=False,
+                        type="ecb",
+                    ),
+                )
+                ch = int(model_channels * mult)
+                if level and i == num_res_blocks[level] - 1:
+                    out_ch = ch
+                    layers.append(
+                        CBAReParam(
+                            ch, out_ch, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+                        ),
+                    )
+                    layers.append(nn.Upsample(scale_factor=2, mode="nearest"))
+            self.output_blocks.append(Sequential(*layers))
+
+        self.out = nn.Sequential(
+            CBAReParam(
+                input_ch, out_channels, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+            ),
+        )
+
+    def forward(self, x):
+        """
+        Apply the model to an input batch.
+        :param x: an [N x C x ...] Tensor of inputs.
+        :param timesteps: a 1-D batch of timesteps.
+        :param lq: an [N x C x ...] Tensor of low quality iamge.
+        :return: an [N x C x ...] Tensor of outputs.
+        """
+        hs = []
+        h = x
+        for i, module in enumerate(self.input_blocks):
+            h = module(h)
+            hs.append(h)
+        h = self.middle_block(h)
+        cnt = 0
+        for module in self.output_blocks:
+            pop = hs.pop()
+            h = h[:, :, : pop.shape[2], : pop.shape[3]]
+            h = torch.cat([h, pop], dim=1)
+            h = module(h)
+            cnt += 1
+        h = h.type(x.dtype)
+        out = self.out(h)
+        out = F.pixel_shuffle(out, 4)
+        return out[:, :, : x.shape[2] * 4, : x.shape[3] * 4]
+
+
 def RGB2YCbCr(rgb):
     # BT601
     ycbcr = rgb.clone()
