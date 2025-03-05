@@ -1,1 +1,4 @@
-Model               	Val PSNR  	Test PSNR 	Val Time [ms] 	Test Time [ms]	Ave Time [ms] 	Params [M]	FLOPs [G] 	Acts [M]	Mem [M] 	Conv    
+Model               	Val PSNR  	Val Time [ms] 	Params [M]	FLOPs [G] 	Acts [M]	Mem [M] 	Conv    
+00_EFDN_baseline    	25.91     	15.78         	0.276     	16.70     	111.12  	662.89  	  65    
+01_[GMSR]           	24.92     	44.17         	6.763     	110.42    	52.43   	352.25  	  26    
+02_[GMSR]           	24.97     	146.37        	6.539     	31.47     	0.00    	267.29  	   0    

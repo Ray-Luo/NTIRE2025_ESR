@@ -1,0 +1,41 @@
+Baseline
+25-03-04 22:16:32.310 :       Max Memory : 662.886 [M]
+25-03-04 22:16:32.310 : ------> Average runtime of (valid) is : 15.775375 milliseconds
+25-03-04 22:16:32.310 : ------> Average PSNR of (valid) is : 25.906417 dB
+25-03-04 22:16:32.323 :     #Activations : 111.1167 [M]
+25-03-04 22:16:32.324 :          #Conv2d : 65
+Unsupported operator aten::prelu encountered 12 time(s)
+Unsupported operator aten::max_pool2d encountered 4 time(s)
+Unsupported operator aten::add encountered 5 time(s)
+Unsupported operator aten::sigmoid encountered 4 time(s)
+Unsupported operator aten::mul encountered 4 time(s)
+Unsupported operator aten::add_ encountered 4 time(s)
+Unsupported operator aten::pixel_shuffle encountered 1 time(s)
+25-03-04 22:16:32.434 :            FLOPs : 16.7035 [G]
+25-03-04 22:16:32.436 :          #Params : 0.2762 [M]
+
+
+
+25-03-04 22:51:06.913 :       Max Memory : 352.251 [M]
+25-03-04 22:51:06.913 : ------> Average runtime of (valid) is : 44.174431 milliseconds
+25-03-04 22:51:06.913 : ------> Average PSNR of (valid) is : 24.920189 dB
+25-03-04 22:51:06.942 :     #Activations : 52.4288 [M]
+25-03-04 22:51:06.942 :          #Conv2d : 26
+Unsupported operator aten::clone encountered 2 time(s)
+Unsupported operator aten::mul encountered 52 time(s)
+Unsupported operator aten::add encountered 57 time(s)
+Unsupported operator aten::sub encountered 5 time(s)
+Unsupported operator aten::pixel_unshuffle encountered 1 time(s)
+Unsupported operator aten::pad encountered 52 time(s)
+Unsupported operator aten::add_ encountered 23 time(s)
+Unsupported operator aten::prelu encountered 12 time(s)
+Unsupported operator aten::pixel_shuffle encountered 1 time(s)
+Unsupported operator aten::upsample_bicubic2d encountered 1 time(s)
+25-03-04 22:51:07.831 :            FLOPs : 110.4182 [G]
+25-03-04 22:51:07.832 :          #Params : 6.7633 [M]
+
+
+25-03-04 22:58:34.075 :       Max Memory : 267.294 [M]
+25-03-04 22:58:34.075 : ------> Average runtime of (valid) is : 146.365546 milliseconds
+25-03-04 22:58:34.075 : ------> Average PSNR of (valid) is : 24.973223 dB
+25-03-04 22:58:34.207 :     #Activations : 0.0000 [M]
