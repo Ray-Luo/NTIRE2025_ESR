@@ -220,6 +220,57 @@ class GMSR_ECB(nn.Module):
         return out
 
 
+class GMSR_ECB2(nn.Module):
+    def __init__(
+        self,
+        scale=4,
+        num_input_channels=3,
+        channel=96,
+        df_num=12,
+    ):
+        super(GMSR_ECB2, self).__init__()
+
+        self.sf = CBAReParam(
+            num_input_channels, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.df = []
+        for _ in range(df_num):
+            self.df.append(
+                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+            self.df.append(nn.ReLU())
+        self.df = nn.Sequential(*self.df)
+
+        self.transition = CBAReParam(
+            channel * 2, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.last_conv = CBAReParam(
+            channel, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+        )
+
+    def forward(self, x):
+        img = x
+
+        sf_feat = self.sf(x)
+
+        feat = self.df(sf_feat)
+
+        feat = torch.cat([feat, sf_feat], dim=1)
+
+        feat = self.transition(feat)
+
+        feat = self.last_conv(feat)
+        img = torch.cat([img] * 16, dim=1)
+        feat = feat + img
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
+
+        out = torch.clamp(out, 0.0, 1.0)
+
+        return out
+
+
 class Sequential(nn.Sequential):
     """
     A sequential module that passes timestep embeddings to the children that

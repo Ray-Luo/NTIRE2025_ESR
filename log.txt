@@ -4,13 +4,6 @@ Baseline
 25-03-04 22:16:32.310 : ------> Average PSNR of (valid) is : 25.906417 dB
 25-03-04 22:16:32.323 :     #Activations : 111.1167 [M]
 25-03-04 22:16:32.324 :          #Conv2d : 65
-Unsupported operator aten::prelu encountered 12 time(s)
-Unsupported operator aten::max_pool2d encountered 4 time(s)
-Unsupported operator aten::add encountered 5 time(s)
-Unsupported operator aten::sigmoid encountered 4 time(s)
-Unsupported operator aten::mul encountered 4 time(s)
-Unsupported operator aten::add_ encountered 4 time(s)
-Unsupported operator aten::pixel_shuffle encountered 1 time(s)
 25-03-04 22:16:32.434 :            FLOPs : 16.7035 [G]
 25-03-04 22:16:32.436 :          #Params : 0.2762 [M]
 
@@ -62,3 +55,38 @@ EDFN -- verify
 25-03-10 23:19:47.774 : ------> Average PSNR of (valid) is : 25.970128 dB
 25-03-10 23:19:47.811 :            FLOPs : 79.0742 [G]
 25-03-10 23:19:47.812 :          #Params : 1.2066 [M]
+
+model = GMSR_ECB(
+    channel=48,
+    df_num=7,
+)
+25-03-10 23:41:20.730 :       Max Memory : 323.061 [M]
+25-03-10 23:41:20.730 : ------> Average runtime of (valid) is : 11.752484 milliseconds
+25-03-10 23:41:20.760 :            FLOPs : 13.7594 [G]
+25-03-10 23:41:20.760 :          #Params : 0.2100 [M]
+
+model = GMSR_ECB(
+    channel=64,
+    df_num=5,
+)
+25-03-10 23:59:59.633 :       Max Memory : 430.281 [M]
+25-03-10 23:59:59.634 : ------> Average runtime of (valid) is : 7.985502 milliseconds
+25-03-10 23:59:59.657 :          #Params : 0.2887 [M]
+
+
+model = GMSR_ECB2(
+    channel=48,
+    df_num=7,
+)
+25-03-10 23:57:50.001 :       Max Memory : 323.841 [M]
+25-03-10 23:57:50.001 : ------> Average runtime of (valid) is : 8.354995 milliseconds
+25-03-10 23:57:50.032 :            FLOPs : 13.6745 [G]
+
+model = GMSR_ECB2(
+    channel=64,
+    df_num=5,
+)
+25-03-11 00:04:25.387 :       Max Memory : 430.276 [M]
+25-03-11 00:04:25.387 : ------> Average runtime of (valid) is : 8.282839 millisecondsme(s)
+25-03-11 00:04:25.416 :            FLOPs : 18.8366 [G]
+25-03-11 00:04:25.416 :          #Params : 0.2874 [M]
