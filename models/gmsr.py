@@ -271,6 +271,57 @@ class GMSR_ECB2(nn.Module):
         return out
 
 
+class GMSR_ECB3(nn.Module):
+    def __init__(
+        self,
+        scale=4,
+        num_input_channels=3,
+        channel=96,
+        df_num=12,
+    ):
+        super(GMSR_ECB3, self).__init__()
+
+        self.sf = CBAReParam(
+            num_input_channels, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.df = []
+        for _ in range(df_num):
+            self.df.append(
+                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+            self.df.append(nn.ReLU())
+        self.df = nn.Sequential(*self.df)
+
+        self.transition = CBAReParam(
+            channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.last_conv = CBAReParam(
+            channel, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+        )
+
+    def forward(self, x):
+        img = x
+
+        sf_feat = self.sf(x)
+
+        feat = self.df(sf_feat)
+
+        feat = feat + sf_feat
+
+        feat = self.transition(feat)
+
+        feat = self.last_conv(feat)
+        img = torch.cat([img] * 16, dim=1)
+        feat = feat + img
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
+
+        out = torch.clamp(out, 0.0, 1.0)
+
+        return out
+
+
 class Sequential(nn.Sequential):
     """
     A sequential module that passes timestep embeddings to the children that
@@ -466,7 +517,7 @@ class GMSR_EDBB(nn.Module):
     def __init__(
         self,
         scale=2,
-        num_input_channels=4,
+        num_input_channels=3,
         channel=128,
         df_num=10,
     ):
@@ -481,12 +532,10 @@ class GMSR_EDBB(nn.Module):
 
         self.transition = EDBB(channel * 2, channel)
 
-        self.last_conv = EDBB(channel + num_input_channels, 64, act_type="relu")
+        self.last_conv = EDBB(channel + num_input_channels, 48, act_type="relu")
 
-    def forward(self, input):
-        yuv = RGB2YCbCr(input)
-        x, uv = yuv[:, :1, :, :], yuv[:, 1:, :, :]
-        x = torch.nn.functional.pixel_unshuffle(x, 2)
+    def forward(self, x):
+        # x = torch.nn.functional.pixel_unshuffle(x, 2)
         img = x
 
         sf_feat = self.sf(x)
@@ -501,11 +550,49 @@ class GMSR_EDBB(nn.Module):
 
         feat = self.last_conv(feat)
         feat = torch.clamp(feat, 0.0, 1.0)
-        out = torch.nn.functional.pixel_shuffle(feat, 8)
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
 
-        uv = F.interpolate(uv, scale_factor=4, mode="bicubic", align_corners=False)
-        yuv = torch.cat([out, uv], dim=1)
-        out = YCbCr2RGB(yuv)
+        return out
+
+
+class GMSR_EDBB2(nn.Module):
+    def __init__(
+        self,
+        scale=2,
+        num_input_channels=3,
+        channel=128,
+        df_num=10,
+    ):
+        super(GMSR_EDBB2, self).__init__()
+
+        self.sf = EDBB(num_input_channels, channel)
+
+        self.df = []
+        for _ in range(df_num):
+            self.df.append(EDBB(channel, channel))
+        self.df = nn.Sequential(*self.df)
+
+        self.transition = EDBB(channel * 2, channel)
+
+        self.last_conv = EDBB(channel, 48, act_type="relu")
+
+    def forward(self, x):
+        img = x
+
+        sf_feat = self.sf(x)
+
+        feat = self.df(sf_feat)
+
+        feat = torch.cat([feat, sf_feat], dim=1)
+
+        feat = self.transition(feat)
+
+        feat = self.last_conv(feat)
+        img = torch.cat([img] * 16, dim=1)
+        feat = feat + img
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
+
+        out = torch.clamp(out, 0.0, 1.0)
 
         return out
 

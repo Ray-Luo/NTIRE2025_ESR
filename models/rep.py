@@ -583,7 +583,7 @@ class EDBB(nn.Module):
         inp_planes,
         out_planes,
         depth_multiplier=2.0,
-        act_type="prelu",
+        act_type="lrelu",
         with_idt=True,
         deploy=False,
         with_13=True,
@@ -646,6 +646,8 @@ class EDBB(nn.Module):
             self.act = nn.PReLU(num_parameters=self.out_planes)
         elif self.act_type == "relu":
             self.act = nn.ReLU(inplace=True)
+        elif self.act_type == "lrelu":
+            self.act = nn.LeakyReLU(inplace=True)
         elif self.act_type == "rrelu":
             self.act = nn.RReLU(lower=-0.05, upper=0.05)
         elif self.act_type == "softplus":

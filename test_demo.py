@@ -50,11 +50,18 @@ def select_model(args, device):
     elif model_id == 2:
         # from models.team01_[your_model_name] import [your_model_name]
         name, data_range = f"{model_id:02}_[GMSRECB]", 1.0
-        from models.gmsr import convert_to_deploy, GMSR_ECB, GMSR_ECB2
+        from models.gmsr import (
+            convert_to_deploy,
+            GMSR_ECB,
+            GMSR_ECB2,
+            GMSR_ECB3,
+            GMSR_EDBB,
+            GMSR_EDBB2,
+        )
 
         model = GMSR_ECB(
-            channel=96,
-            df_num=12,
+            channel=48,
+            df_num=9,
         )
         pretrain_path = os.path.join("model_zoo", "last.ckpt")
         checkpoint = torch.load(
@@ -67,7 +74,7 @@ def select_model(args, device):
             target = "student."
             if target in key:
                 filtered_checkpoint[key.replace(target, "")] = value
-        model.load_state_dict(filtered_checkpoint)
+        # model.load_state_dict(filtered_checkpoint)
         model = convert_to_deploy(model)
     elif model_id == 3:
         # from models.team01_[your_model_name] import [your_model_name]

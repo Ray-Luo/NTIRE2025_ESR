@@ -81,6 +81,25 @@ model = GMSR_ECB2(
 25-03-10 23:57:50.001 :       Max Memory : 323.841 [M]
 25-03-10 23:57:50.001 : ------> Average runtime of (valid) is : 8.354995 milliseconds
 25-03-10 23:57:50.032 :            FLOPs : 13.6745 [G]
+25-03-11 11:19:13.389 :          #Params : 0.2087 [M]
+
+model = GMSR_ECB2(
+    channel=64,
+    df_num=3,
+)
+25-03-11 12:50:56.870 :       Max Memory : 429.995 [M]
+25-03-11 12:50:56.870 : ------> Average runtime of (valid) is : 25.420707 milliseconds
+25-03-11 12:50:56.890 :            FLOPs : 14.0048 [G]
+25-03-11 12:50:56.890 :          #Params : 0.2137 [M]
+
+model = GMSR_ECB2(
+    channel=64,
+    df_num=4,
+)
+25-03-11 12:52:41.247 :       Max Memory : 430.135 [M]
+25-03-11 12:52:41.247 : ------> Average runtime of (valid) is : 11.947275 milliseconds
+25-03-11 12:52:41.270 :            FLOPs : 16.4207 [G]
+25-03-11 12:52:41.270 :          #Params : 0.2506 [M]
 
 model = GMSR_ECB2(
     channel=64,
@@ -90,3 +109,40 @@ model = GMSR_ECB2(
 25-03-11 00:04:25.387 : ------> Average runtime of (valid) is : 8.282839 millisecondsme(s)
 25-03-11 00:04:25.416 :            FLOPs : 18.8366 [G]
 25-03-11 00:04:25.416 :          #Params : 0.2874 [M]
+
+
+model = GMSR_ECB2(
+    channel=96,
+    df_num=5,
+)
+25-03-11 12:46:42.716 :       Max Memory : 578.366 [M]
+25-03-11 12:46:42.716 : ------> Average runtime of (valid) is : 13.182349 milliseconds
+25-03-11 12:46:42.716 : ------> Average PSNR of (valid) is : 17.158083 dB
+25-03-11 12:46:42.741 :            FLOPs : 40.9385 [G]
+25-03-11 12:46:42.741 :          #Params : 0.6247 [M]
+
+model = GMSR_ECB2(
+    channel=96,
+    df_num=3,
+)
+25-03-11 12:48:27.978 : ------> Average runtime of (valid) is : 12.060460 milliseconds
+25-03-11 12:48:27.978 : ------> Average PSNR of (valid) is : 17.183547 dB
+25-03-11 12:48:27.997 :            FLOPs : 30.0669 [G]
+25-03-11 12:48:27.997 :          #Params : 0.4588 [M]
+
+
+
+
+
+
+
+
+model = GMSR_ECB3(
+    channel=64,
+    df_num=4,
+)
+25-03-11 12:58:53.273 :       Max Memory : 322.295 [M]
+25-03-11 12:58:53.273 : ------> Average runtime of (valid) is : 17.691074 milliseconds
+25-03-11 12:58:53.273 : ------> Average PSNR of (valid) is : 16.616835 dB
+25-03-11 12:58:53.292 :            FLOPs : 14.0048 [G]
+25-03-11 12:58:53.293 :          #Params : 0.2137 [M]
