@@ -39,3 +39,26 @@ Unsupported operator aten::upsample_bicubic2d encountered 1 time(s)
 25-03-04 22:58:34.075 : ------> Average runtime of (valid) is : 146.365546 milliseconds
 25-03-04 22:58:34.075 : ------> Average PSNR of (valid) is : 24.973223 dB
 25-03-04 22:58:34.207 :     #Activations : 0.0000 [M]
+
+
+EDFN -- verify
+25-03-10 22:52:40.497 :       Max Memory : 662.886 [M]
+25-03-10 22:52:40.497 : ------> Average runtime of (valid) is : 15.555353 milliseconds
+25-03-10 22:52:40.498 : ------> Average PSNR of (valid) is : 25.518293 dB
+25-03-10 22:52:40.512 :     #Activations : 111.1167 [M]
+25-03-10 22:52:40.629 :            FLOPs : 16.7035 [G]
+25-03-10 22:52:40.630 :          #Params : 0.2762 [M]
+
+
+25-03-10 23:13:31.049 :       Max Memory : 592.968 [M]
+25-03-10 23:13:31.049 : ------> Average runtime of (valid) is : 123.191573 milliseconds
+25-03-10 23:13:31.049 : ------> Average PSNR of (valid) is : 25.970038 dB
+25-03-10 23:14:12.643 :            FLOPs : 79.6431 [G]
+25-03-10 23:09:16.451 :          #Params : 4.2826 [M]
+
+
+25-03-10 23:19:47.774 :       Max Memory : 580.586 [M]
+25-03-10 23:19:47.774 : ------> Average runtime of (valid) is : 11.799302 milliseconds
+25-03-10 23:19:47.774 : ------> Average PSNR of (valid) is : 25.970128 dB
+25-03-10 23:19:47.811 :            FLOPs : 79.0742 [G]
+25-03-10 23:19:47.812 :          #Params : 1.2066 [M]

@@ -49,11 +49,11 @@ def select_model(args, device):
         model.load_state_dict(filtered_checkpoint)
     elif model_id == 2:
         # from models.team01_[your_model_name] import [your_model_name]
-        name, data_range = f"{model_id:02}_[GMSR]", 1.0
-        from models.gmsr import GMSR_ECB
+        name, data_range = f"{model_id:02}_[GMSRECB]", 1.0
+        from models.gmsr import convert_to_deploy, GMSR_ECB
 
         model = GMSR_ECB()
-        pretrain_path = os.path.join("model_zoo", "epoch=56-step=6155.ckpt")
+        pretrain_path = os.path.join("model_zoo", "last.ckpt")
         checkpoint = torch.load(
             pretrain_path,
             map_location=lambda storage, loc: storage,
@@ -65,6 +65,7 @@ def select_model(args, device):
             if target in key:
                 filtered_checkpoint[key.replace(target, "")] = value
         model.load_state_dict(filtered_checkpoint)
+        model = convert_to_deploy(model)
     elif model_id == 3:
         # from models.team01_[your_model_name] import [your_model_name]
         name, data_range = f"{model_id:02}_[SlimUNetModelConv]", 1.0
@@ -79,6 +80,25 @@ def select_model(args, device):
         )["state_dict"]
         filtered_checkpoint = {}
         for key, value in checkpoint.items():
+            target = "student."
+            if target in key:
+                filtered_checkpoint[key.replace(target, "")] = value
+        model.load_state_dict(filtered_checkpoint)
+    elif model_id == 4:
+        # from models.team01_[your_model_name] import [your_model_name]
+        name, data_range = f"{model_id:02}_[EDFN]", 1.0
+        from models.team00_EFDN import EFDN
+
+        model = EFDN()
+        pretrain_path = os.path.join("model_zoo", "last.ckpt")
+        checkpoint = torch.load(
+            pretrain_path,
+            map_location=lambda storage, loc: storage,
+            weights_only=False,
+        )["state_dict"]
+        filtered_checkpoint = {}
+        for key, value in checkpoint.items():
+            # print(key)
             target = "student."
             if target in key:
                 filtered_checkpoint[key.replace(target, "")] = value

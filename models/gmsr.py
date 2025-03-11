@@ -5,6 +5,19 @@ from torch.nn import functional as F
 from .rep import CBAReParam, EDBB
 
 
+def convert_to_deploy(model):
+    print("convert model to deploy..")
+    print("model arch before convert: ")
+    # print(model)
+    for module in model.modules():
+        if hasattr(module, "switch_to_deploy"):
+            module.switch_to_deploy()
+
+    print("\nmodel arch after convert: ")
+    # print(model)
+    return model
+
+
 class GMSR(nn.Module):
     def __init__(
         self,
@@ -159,10 +172,10 @@ class GMSR_FP32(nn.Module):
 class GMSR_ECB(nn.Module):
     def __init__(
         self,
-        scale=2,
-        num_input_channels=4,
-        channel=128,
-        df_num=10,
+        scale=4,
+        num_input_channels=3,
+        channel=96,
+        df_num=12,
     ):
         super(GMSR_ECB, self).__init__()
 
@@ -183,13 +196,11 @@ class GMSR_ECB(nn.Module):
         )
 
         self.last_conv = CBAReParam(
-            channel + num_input_channels, 64, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+            channel + num_input_channels, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
         )
 
-    def forward(self, input):
-        yuv = RGB2YCbCr(input)
-        x, uv = yuv[:, :1, :, :], yuv[:, 1:, :, :]
-        x = torch.nn.functional.pixel_unshuffle(x, 2)
+    def forward(self, x):
+        # x = torch.nn.functional.pixel_unshuffle(x, 2)
         img = x
 
         sf_feat = self.sf(x)
@@ -204,11 +215,7 @@ class GMSR_ECB(nn.Module):
 
         feat = self.last_conv(feat)
         feat = torch.clamp(feat, 0.0, 1.0)
-        out = torch.nn.functional.pixel_shuffle(feat, 8)
-
-        uv = F.interpolate(uv, scale_factor=4, mode="bicubic", align_corners=False)
-        yuv = torch.cat([out, uv], dim=1)
-        out = YCbCr2RGB(yuv)
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
 
         return out
 

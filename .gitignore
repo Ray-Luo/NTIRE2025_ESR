@@ -2,3 +2,5 @@ vali/
 model_zoo/*.ckpt
 */__pycache__/
 ./NTIRE2025-EfficientSR.log
+*.zip
+__MACOSX/
