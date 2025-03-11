@@ -52,8 +52,8 @@ def select_model(args, device):
         name, data_range = f"{model_id:02}_[GMSRECB]", 1.0
         from models.gmsr import convert_to_deploy, GMSR_ECB, GMSR_ECB2
 
-        model = GMSR_ECB2(
-            channel=48,
+        model = GMSR_ECB(
+            channel=96,
             df_num=12,
         )
         pretrain_path = os.path.join("model_zoo", "last.ckpt")
@@ -67,7 +67,7 @@ def select_model(args, device):
             target = "student."
             if target in key:
                 filtered_checkpoint[key.replace(target, "")] = value
-        # model.load_state_dict(filtered_checkpoint)
+        model.load_state_dict(filtered_checkpoint)
         model = convert_to_deploy(model)
     elif model_id == 3:
         # from models.team01_[your_model_name] import [your_model_name]
@@ -131,8 +131,10 @@ def select_dataset(data_dir, mode):
     # inference on the DIV2K_LSDIR_valid set
     elif mode == "valid":
         path = [
-            (p.replace("gt", "lq").replace(".png", "x4.png"), p)
-            for p in sorted(glob.glob(os.path.join(data_dir, "gt/*.png")))
+            (p.replace("_HR", "_LR").replace(".png", "x4.png"), p)
+            for p in sorted(
+                glob.glob(os.path.join(data_dir, "DIV2K_LSDIR_valid_HR/*.png"))
+            )
         ]
     else:
         raise NotImplementedError(f"{mode} is not implemented in select_dataset")
@@ -435,7 +437,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("NTIRE2025-EfficientSR")
-    parser.add_argument("--data_dir", default="./vali", type=str)
+    parser.add_argument("--data_dir", default="../", type=str)
     parser.add_argument("--save_dir", default="./results", type=str)
     parser.add_argument("--model_id", default=0, type=int)
     parser.add_argument(
