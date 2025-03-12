@@ -243,62 +243,11 @@ class GMSR_ECB2(nn.Module):
         self.df = nn.Sequential(*self.df)
 
         self.transition = CBAReParam(
-            channel * 2, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
-        )
-
-        self.last_conv = CBAReParam(
-            channel, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
-        )
-
-    def forward(self, x):
-        img = x
-
-        sf_feat = self.sf(x)
-
-        feat = self.df(sf_feat)
-
-        feat = torch.cat([feat, sf_feat], dim=1)
-
-        feat = self.transition(feat)
-
-        feat = self.last_conv(feat)
-        img = torch.cat([img] * 16, dim=1)
-        feat = feat + img
-        out = torch.nn.functional.pixel_shuffle(feat, 4)
-
-        out = torch.clamp(out, 0.0, 1.0)
-
-        return out
-
-
-class GMSR_ECB3(nn.Module):
-    def __init__(
-        self,
-        scale=4,
-        num_input_channels=3,
-        channel=96,
-        df_num=12,
-    ):
-        super(GMSR_ECB3, self).__init__()
-
-        self.sf = CBAReParam(
-            num_input_channels, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
-        )
-
-        self.df = []
-        for _ in range(df_num):
-            self.df.append(
-                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
-            )
-            self.df.append(nn.ReLU())
-        self.df = nn.Sequential(*self.df)
-
-        self.transition = CBAReParam(
             channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
         )
 
         self.last_conv = CBAReParam(
-            channel, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+            channel + num_input_channels, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
         )
 
     def forward(self, x):
@@ -312,9 +261,115 @@ class GMSR_ECB3(nn.Module):
 
         feat = self.transition(feat)
 
+        feat = torch.cat([feat, img], dim=1)
         feat = self.last_conv(feat)
-        img = torch.cat([img] * 16, dim=1)
-        feat = feat + img
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
+
+        out = torch.clamp(out, 0.0, 1.0)
+
+        return out
+
+
+class GMSR_ECB3(nn.Module):
+    def __init__(
+        self,
+        scale=2,
+        num_input_channels=3,
+        channel=32,
+        df_num=10,
+    ):
+        super(GMSR_ECB3, self).__init__()
+
+        self.sf = CBAReParam(
+            num_input_channels, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.df = []
+        for _ in range(df_num - 3):
+            self.df.append(
+                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+            self.df.append(nn.ReLU())
+        self.df = nn.Sequential(*self.df)
+
+        self.transition = []
+        for i in range(3):
+            input_c = channel * 2 if i == 0 else channel
+            self.transition.append(
+                CBAReParam(input_c, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+        self.transition = nn.Sequential(*self.transition)
+
+        self.last_conv = CBAReParam(
+            channel + num_input_channels, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+        )
+
+    def forward(self, x):
+        img = x
+
+        sf_feat = self.sf(x)
+
+        feat = self.df(sf_feat)
+
+        feat = torch.cat([feat, sf_feat], dim=1)
+
+        feat = self.transition(feat)
+
+        feat = torch.cat([feat, img], dim=1)
+
+        feat = self.last_conv(feat)
+        feat = torch.clamp(feat, 0.0, 1.0)
+        out = torch.nn.functional.pixel_shuffle(feat, 4)
+
+        return out
+
+
+class GMSR_ECB4(nn.Module):
+    def __init__(
+        self,
+        scale=4,
+        num_input_channels=3,
+        channel=96,
+        df_num=12,
+    ):
+        super(GMSR_ECB4, self).__init__()
+
+        self.sf = CBAReParam(
+            num_input_channels, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb"
+        )
+
+        self.df = []
+        for _ in range(df_num - 3):
+            self.df.append(
+                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+            self.df.append(nn.ReLU())
+        self.df = nn.Sequential(*self.df)
+
+        self.transition = []
+        for _ in range(3):
+            self.transition.append(
+                CBAReParam(channel, channel, 3, 1, 1, act="LReLU", bn=False, type="ecb")
+            )
+        self.transition = nn.Sequential(*self.transition)
+
+        self.last_conv = CBAReParam(
+            channel + num_input_channels, 48, 3, 1, 1, act="ReLU", bn=False, type="ecb"
+        )
+
+    def forward(self, x):
+        img = x
+
+        sf_feat = self.sf(x)
+
+        feat = self.df(sf_feat)
+
+        feat = feat + sf_feat
+
+        feat = self.transition(feat)
+
+        feat = torch.cat([feat, img], dim=1)
+        feat = self.last_conv(feat)
         out = torch.nn.functional.pixel_shuffle(feat, 4)
 
         out = torch.clamp(out, 0.0, 1.0)

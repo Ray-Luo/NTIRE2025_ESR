@@ -55,13 +55,14 @@ def select_model(args, device):
             GMSR_ECB,
             GMSR_ECB2,
             GMSR_ECB3,
+            GMSR_ECB4,
             GMSR_EDBB,
             GMSR_EDBB2,
         )
 
-        model = GMSR_ECB(
+        model = GMSR_ECB3(
             channel=48,
-            df_num=9,
+            df_num=10,
         )
         pretrain_path = os.path.join("model_zoo", "last.ckpt")
         checkpoint = torch.load(
